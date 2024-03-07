@@ -34833,6 +34833,37 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 5529:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.cmd = void 0;
+const process_1 = __importDefault(__nccwpck_require__(7282));
+const child_process_1 = __nccwpck_require__(2081);
+function cmd(...command) {
+    let p = (0, child_process_1.spawn)(command[0], command.slice(1));
+    return new Promise(resolve => {
+        p.stdout.on('data', x => {
+            process_1.default.stdout.write(x.toString());
+        });
+        p.stderr.on('data', x => {
+            process_1.default.stderr.write(x.toString());
+        });
+        p.on('exit', code => {
+            resolve(code);
+        });
+    });
+}
+exports.cmd = cmd;
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -34865,6 +34896,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const set_languages_for_update_1 = __nccwpck_require__(181);
+const cmd_1 = __nccwpck_require__(5529);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -34878,19 +34910,8 @@ async function run() {
         core.exportVariable('github_token', githubToken);
         const result = await (0, set_languages_for_update_1.setLanguagesForUpdate)();
         core.info(`Language for updates works -> Result: ${result}`);
-        //   - name: Set languages for update
-        //     run: node ./dist/set-languages-for-update.js
-        //     shell: bash
-        //   - name: Start Build
-        //   run: liblab build --skip-validation --approve-docs
-        //   shell: bash
-        //   - name: Create PRs to GitHub repos
-        //   shell: bash
-        // #      TODO: @skos remove this before publishing
-        //   env:
-        //       DEBUG: true
-        //   run: liblab pr
-        // Set outputs for other workflow steps to use
+        await (0, cmd_1.cmd)('npx', '--yes', 'liblab', 'build', '--yes');
+        await (0, cmd_1.cmd)('npx', '--yes', 'liblab', 'pr');
         core.setOutput('status', `The status is: ${liblabToken} & ${result}`);
     }
     catch (error) {
@@ -35143,6 +35164,14 @@ module.exports = require("buffer");
 
 /***/ }),
 
+/***/ 2081:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("child_process");
+
+/***/ }),
+
 /***/ 6206:
 /***/ ((module) => {
 
@@ -35268,6 +35297,14 @@ module.exports = require("path");
 
 "use strict";
 module.exports = require("perf_hooks");
+
+/***/ }),
+
+/***/ 7282:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("process");
 
 /***/ }),
 
