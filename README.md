@@ -1,4 +1,4 @@
-# Create a GitHub Action Using TypeScript
+# Generate SDKs using latest Liblab and publish PRs
 
 [![GitHub Super-Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
 ![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
