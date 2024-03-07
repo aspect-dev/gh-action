@@ -1,6 +1,6 @@
-name: 'Stevan SDK Update'
-description: 'Provide a description here'
-author: 'Stevan'
+name: 'Liblab SDK updates'
+description: 'Github Action that builds SDKs and publishes PRs using latest Liblab versions'
+author: 'Liblab'
 
 branding:
   icon: 'git-pull-request'
