@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import { setLanguagesForUpdate } from './set-languages-for-update'
 import { cmd } from './cmd'
-import process from 'process'
 
 /**
  * The main function for the action.
@@ -14,7 +13,6 @@ export async function run(): Promise<void> {
 
     core.exportVariable('liblab_token', liblabToken)
     core.exportVariable('github_token', githubToken)
-    core.info(`Process environment variables: ${JSON.stringify(process.env)}`)
 
     const languagesToUpdate = await setLanguagesForUpdate()
     if (!languagesToUpdate) {
@@ -25,15 +23,11 @@ export async function run(): Promise<void> {
     core.info(`Languages that need update: ${languagesToUpdate}`)
 
     core.info('Building SDKs...')
-    await cmd('npx', ['--yes', 'liblab', 'build', '--yes'], {
-      env: { LIBLAB_TOKEN: liblabToken, GITHUB_TOKEN: githubToken }
-    })
+    await cmd('npx','--yes', 'liblab', 'build', '--yes')
     core.info('Finished building SDKs.')
 
     core.info('Publishing PRs...')
-    await cmd('npx', ['--yes', 'liblab', 'pr'], {
-      env: { LIBLAB_TOKEN: liblabToken, GITHUB_TOKEN: githubToken }
-    })
+    await cmd('npx', '--yes', 'liblab', 'pr')
     core.info('Finished publishing PRs.')
 
     core.setOutput('status', `Finished building languages: `)
