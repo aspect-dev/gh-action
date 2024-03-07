@@ -10,9 +10,9 @@ export async function run(): Promise<void> {
     const liblabToken: string = core.getInput('liblab_token')
     const githubToken: string = core.getInput('github_token')
 
-    core.setCommandEcho(true);
-    core.exportVariable('liblab_token', liblabToken);
-    core.exportVariable('github_token', githubToken);
+    core.setCommandEcho(true)
+    core.exportVariable('liblab_token', liblabToken)
+    core.exportVariable('github_token', githubToken)
 
     // Log the current timestamp, wait, then log the new timestamp
     core.debug(new Date().toTimeString())
@@ -20,7 +20,7 @@ export async function run(): Promise<void> {
     core.debug(new Date().toTimeString())
 
     // Set outputs for other workflow steps to use
-    core.setOutput('status', `The status is: ${liblabToken}`);
+    core.setOutput('status', `The status is: ${liblabToken}`)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
