@@ -12,7 +12,7 @@ const MANIFEST_PATH = '.manifest.json'
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
 
-export async function setLanguagesForUpdate(): Promise<boolean> {
+export async function setLanguagesForUpdate(): Promise<string[]> {
   const liblabConfig = await readLiblabConfig()
   const languagesToUpdate = []
 
@@ -30,13 +30,12 @@ export async function setLanguagesForUpdate(): Promise<boolean> {
     }
   }
 
-  if (languagesToUpdate.length === 0) {
-    return false
+  if (languagesToUpdate.length !== 0) {
+    liblabConfig.languages = languagesToUpdate
+    await fs.writeJson(LIBLAB_CONFIG_PATH, liblabConfig, { spaces: 2 })
   }
 
-  liblabConfig.languages = languagesToUpdate
-  await fs.writeJson(LIBLAB_CONFIG_PATH, liblabConfig, { spaces: 2 })
-  return true
+  return languagesToUpdate
 }
 
 async function fetchManifestForLanguage(

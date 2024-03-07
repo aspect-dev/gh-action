@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import { setLanguagesForUpdate } from './set-languages-for-update'
 import { cmd } from './cmd'
+import process from 'process'
 
 /**
  * The main function for the action.
@@ -11,17 +12,31 @@ export async function run(): Promise<void> {
     const liblabToken: string = core.getInput('liblab_token')
     const githubToken: string = core.getInput('github_token')
 
-    core.setCommandEcho(true)
     core.exportVariable('liblab_token', liblabToken)
     core.exportVariable('github_token', githubToken)
+    core.info(`Process environment variables: ${JSON.stringify(process.env)}`)
 
-    const result = await setLanguagesForUpdate()
-    core.info(`Language for updates works -> Result: ${result}`)
+    const languagesToUpdate = await setLanguagesForUpdate()
+    if (!languagesToUpdate) {
+      core.info('No languages need an update. Exiting the action.')
+      core.setOutput('status', `No languages need an update.`)
+      return
+    }
+    core.info(`Languages that need update: ${languagesToUpdate}`)
 
-    await cmd('npx', '--yes', 'liblab', 'build', '--yes')
-    await cmd('npx', '--yes', 'liblab', 'pr')
+    core.info('Building SDKs...')
+    await cmd('npx', ['--yes', 'liblab', 'build', '--yes'], {
+      env: { LIBLAB_TOKEN: liblabToken, GITHUB_TOKEN: githubToken }
+    })
+    core.info('Finished building SDKs.')
 
-    core.setOutput('status', `The status is: ${liblabToken} & ${result}`)
+    core.info('Publishing PRs...')
+    await cmd('npx', ['--yes', 'liblab', 'pr'], {
+      env: { LIBLAB_TOKEN: liblabToken, GITHUB_TOKEN: githubToken }
+    })
+    core.info('Finished publishing PRs.')
+
+    core.setOutput('status', `Finished building languages: `)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

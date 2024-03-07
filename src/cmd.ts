@@ -1,12 +1,8 @@
 import process from 'process'
 import { spawn } from 'child_process'
 
-export function cmd(...command: string[]) {
-  let p = spawn(command[0], command.slice(1), {
-    env: {
-      ...process.env
-    }
-  })
+export function cmd(command: string, args: string[], options: {}) {
+  let p = spawn(command, args, options)
   return new Promise(resolve => {
     p.stdout.on('data', x => {
       process.stdout.write(x.toString())
