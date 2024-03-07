@@ -2,22 +2,21 @@ name: 'Stevan SDK Update'
 description: 'Provide a description here'
 author: 'Stevan'
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: 'git-pull-request'
+  color: 'black'
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  liblab_token:
+    description: 'The Liblab authentication token provided by Liblab CLI'
     required: true
-    default: '1000'
+  github_token:
+    description: 'The github token that will allow posting PRs to SDK repos'
+    required: true
 
-# Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  status:
+    description: 'Status of the build'
 
 runs:
   using: node20
