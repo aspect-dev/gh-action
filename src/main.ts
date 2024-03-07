@@ -23,7 +23,7 @@ export async function run(): Promise<void> {
     core.info(`Languages that need update: ${languagesToUpdate}`)
 
     core.info('Building SDKs...')
-    await cmd('npx','--yes', 'liblab', 'build', '--yes')
+    await cmd('npx', '--yes', 'liblab', 'build', '--yes')
     core.info('Finished building SDKs.')
 
     core.info('Publishing PRs...')

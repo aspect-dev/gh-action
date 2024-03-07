@@ -34845,8 +34845,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.cmd = void 0;
 const process_1 = __importDefault(__nccwpck_require__(7282));
 const child_process_1 = __nccwpck_require__(2081);
-function cmd(command, args, options) {
-    let p = (0, child_process_1.spawn)(command, args, options);
+function cmd(...command) {
+    let p = (0, child_process_1.spawn)(command[0], command.slice(1), {
+        env: {
+            ...process_1.default.env
+        }
+    });
     return new Promise(resolve => {
         p.stdout.on('data', x => {
             process_1.default.stdout.write(x.toString());
@@ -34892,15 +34896,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const set_languages_for_update_1 = __nccwpck_require__(181);
 const cmd_1 = __nccwpck_require__(5529);
-const process_1 = __importDefault(__nccwpck_require__(7282));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -34911,7 +34911,6 @@ async function run() {
         const githubToken = core.getInput('github_token');
         core.exportVariable('liblab_token', liblabToken);
         core.exportVariable('github_token', githubToken);
-        core.info(`Process environment variables: ${JSON.stringify(process_1.default.env)}`);
         const languagesToUpdate = await (0, set_languages_for_update_1.setLanguagesForUpdate)();
         if (!languagesToUpdate) {
             core.info('No languages need an update. Exiting the action.');
@@ -34920,14 +34919,10 @@ async function run() {
         }
         core.info(`Languages that need update: ${languagesToUpdate}`);
         core.info('Building SDKs...');
-        await (0, cmd_1.cmd)('npx', ['--yes', 'liblab', 'build', '--yes'], {
-            env: { LIBLAB_TOKEN: liblabToken, GITHUB_TOKEN: githubToken }
-        });
+        await (0, cmd_1.cmd)('npx', '--yes', 'liblab', 'build', '--yes');
         core.info('Finished building SDKs.');
         core.info('Publishing PRs...');
-        await (0, cmd_1.cmd)('npx', ['--yes', 'liblab', 'pr'], {
-            env: { LIBLAB_TOKEN: liblabToken, GITHUB_TOKEN: githubToken }
-        });
+        await (0, cmd_1.cmd)('npx', '--yes', 'liblab', 'pr');
         core.info('Finished publishing PRs.');
         core.setOutput('status', `Finished building languages: `);
     }
