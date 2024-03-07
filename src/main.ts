@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import { wait } from './wait'
+import { setLanguagesForUpdate } from './set-languages-for-update'
 
 /**
  * The main function for the action.
@@ -14,13 +14,24 @@ export async function run(): Promise<void> {
     core.exportVariable('liblab_token', liblabToken)
     core.exportVariable('github_token', githubToken)
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt('10', 10))
-    core.debug(new Date().toTimeString())
+    const result = await setLanguagesForUpdate()
+    core.info(`Language for updates works -> Result: ${result}`)
+
+    //   - name: Set languages for update
+    //     run: node ./dist/set-languages-for-update.js
+    //     shell: bash
+    //   - name: Start Build
+    //   run: liblab build --skip-validation --approve-docs
+    //   shell: bash
+    //   - name: Create PRs to GitHub repos
+    //   shell: bash
+    // #      TODO: @skos remove this before publishing
+    //   env:
+    //       DEBUG: true
+    //   run: liblab pr
 
     // Set outputs for other workflow steps to use
-    core.setOutput('status', `The status is: ${liblabToken}`)
+    core.setOutput('status', `The status is: ${liblabToken} & ${result}`)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
