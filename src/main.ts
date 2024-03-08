@@ -16,23 +16,26 @@ export async function run(): Promise<void> {
 
     const languagesToUpdate = await setLanguagesForUpdate()
     if (!languagesToUpdate) {
-      core.info('No languages need an update. Exiting the action.')
-      core.setOutput('status', `No languages need an update.`)
+      core.info('************ No languages need an update. Skipping the builds. ************')
+      core.setOutput('status', 'skipped')
       return
     }
-    core.info(`Languages that need update: ${languagesToUpdate}`)
+    core.info(`************ Languages that need update: ${languagesToUpdate} ************`)
 
-    core.info('Building SDKs...')
+    core.info('************ Building SDKs... ************')
     await cmd('npx', '--yes', 'liblab', 'build', '--yes')
-    core.info('Finished building SDKs.')
+    core.info('************ Finished building SDKs. ************')
 
-    core.info('Publishing PRs...')
+    core.info('************ Publishing PRs... ************')
     await cmd('npx', '--yes', 'liblab', 'pr')
-    core.info('Finished publishing PRs.')
+    core.info('************ Finished publishing PRs. ************')
 
-    core.setOutput('status', `Finished building languages: `)
+    core.setOutput('status', `success`)
   } catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) {
+      core.setOutput('status', 'failed')
+      core.setFailed(error.message)
+    }
   }
 }

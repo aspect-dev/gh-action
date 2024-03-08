@@ -1,5 +1,6 @@
 name: 'Liblab SDK updates'
-description: 'Github Action that builds SDKs and publishes PRs using latest Liblab versions'
+description:
+  'Github Action that builds SDKs and publishes PRs using latest Liblab versions'
 author: 'Liblab'
 
 branding:

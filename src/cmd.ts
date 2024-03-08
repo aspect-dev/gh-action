@@ -7,7 +7,7 @@ export function cmd(...command: string[]) {
       ...process.env
     }
   })
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     p.stdout.on('data', x => {
       process.stdout.write(x.toString())
     })
@@ -15,7 +15,14 @@ export function cmd(...command: string[]) {
       process.stderr.write(x.toString())
     })
     p.on('exit', code => {
-      resolve(code)
-    })
+      if (code === 0) {
+        resolve(code);
+      } else {
+        reject(new Error(`Command '${command.join(' ')}' exited with code ${code}`));
+      }
+    });
+    p.on('error', err => {
+      reject(err);
+    });
   })
 }
