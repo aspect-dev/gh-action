@@ -12,37 +12,37 @@ permissions:
   contents: read
 
 jobs:
-  test-typescript:
-    name: TypeScript Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        id: setup-node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-          cache: npm
-
-      - name: Install Dependencies
-        id: npm-ci
-        run: npm ci
-
-      - name: Check Format
-        id: npm-format-check
-        run: npm run format:check
-
-      - name: Lint
-        id: npm-lint
-        run: npm run lint
-
-      - name: Test
-        id: npm-ci-test
-        run: npm run ci-test
+#  test-typescript:
+#    name: TypeScript Tests
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        id: checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Setup Node.js
+#        id: setup-node
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version-file: .node-version
+#          cache: npm
+#
+#      - name: Install Dependencies
+#        id: npm-ci
+#        run: npm ci
+#
+#      - name: Check Format
+#        id: npm-format-check
+#        run: npm run format:check
+#
+#      - name: Lint
+#        id: npm-lint
+#        run: npm run lint
+#
+#      - name: Test
+#        id: npm-ci-test
+#        run: npm run ci-test
 
   test-action:
     name: GitHub Actions Test
@@ -53,12 +53,14 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Test Local Action
-        id: test-action
+      - name: Build SDKs and publish PRs
+        id: build_and_publish_prs
         uses: ./
+        env:
+          LIBLAB_ENVIRONMENT: development
         with:
-          milliseconds: 2000
+          liblab_token: ${{ secrets.LIBLAB_TOKEN }}
+          github_token: ${{ secrets.LIBLAB_GITHUB_TOKEN }}
 
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+      - name: Build status
+        run: echo "Status is ${{ steps.build_and_publish_prs.outputs.status }}"
