@@ -11,8 +11,8 @@ export async function run(): Promise<void> {
     const liblabToken: string = core.getInput('liblab_token')
     const githubToken: string = core.getInput('github_token')
 
-    core.exportVariable('liblab_token', liblabToken)
-    core.exportVariable('github_token', githubToken)
+    core.exportVariable('LIBLAB_TOKEN', liblabToken)
+    core.exportVariable('GITHUB_TOKEN', githubToken)
 
     const languagesToUpdate = await setLanguagesForUpdate()
     if (!languagesToUpdate) {
@@ -23,16 +23,16 @@ export async function run(): Promise<void> {
       return
     }
     core.info(
-      `************ Languages that need update: ${languagesToUpdate} ************`
+      `************ Languages that need update: ${languagesToUpdate.join(', ')} ************`
     )
 
-    core.info('************ Building SDKs... ************')
+    core.info('************ Building SDKs ************')
     await cmd('npx', '--yes', 'liblab', 'build', '--yes')
-    core.info('************ Finished building SDKs. ************')
+    core.info('************ Finished building SDKs ************')
 
-    core.info('************ Publishing PRs... ************')
+    core.info('************ Publishing PRs ************')
     await cmd('npx', '--yes', 'liblab', 'pr')
-    core.info('************ Finished publishing PRs. ************')
+    core.info('************ Finished publishing PRs ************')
 
     core.setOutput('status', `success`)
   } catch (error) {

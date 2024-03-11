@@ -34917,21 +34917,21 @@ async function run() {
     try {
         const liblabToken = core.getInput('liblab_token');
         const githubToken = core.getInput('github_token');
-        core.exportVariable('liblab_token', liblabToken);
-        core.exportVariable('github_token', githubToken);
+        core.exportVariable('LIBLAB_TOKEN', liblabToken);
+        core.exportVariable('GITHUB_TOKEN', githubToken);
         const languagesToUpdate = await (0, set_languages_for_update_1.setLanguagesForUpdate)();
         if (!languagesToUpdate) {
             core.info('************ No languages need an update. Skipping the builds. ************');
             core.setOutput('status', 'skipped');
             return;
         }
-        core.info(`************ Languages that need update: ${languagesToUpdate} ************`);
-        core.info('************ Building SDKs... ************');
+        core.info(`************ Languages that need update: ${languagesToUpdate.join(', ')} ************`);
+        core.info('************ Building SDKs ************');
         await (0, cmd_1.cmd)('npx', '--yes', 'liblab', 'build', '--yes');
-        core.info('************ Finished building SDKs. ************');
-        core.info('************ Publishing PRs... ************');
+        core.info('************ Finished building SDKs ************');
+        core.info('************ Publishing PRs ************');
         await (0, cmd_1.cmd)('npx', '--yes', 'liblab', 'pr');
-        core.info('************ Finished publishing PRs. ************');
+        core.info('************ Finished publishing PRs ************');
         core.setOutput('status', `success`);
     }
     catch (error) {
@@ -34994,6 +34994,17 @@ const read_liblab_config_1 = __nccwpck_require__(3029);
 const fs_extra_1 = __importDefault(__nccwpck_require__(5630));
 const MANIFEST_PATH = '.manifest.json';
 const octokit = new rest_1.Octokit({ auth: process.env.GITHUB_TOKEN });
+function bumpSdkVersionOrDefault(liblabConfig, language) {
+    const currentSdkVersion = liblabConfig.languageOptions[language]?.sdkVersion;
+    if (!currentSdkVersion) {
+        return '1.0.0';
+    }
+    const sdkVersion = semver_1.default.parse(currentSdkVersion);
+    if (!sdkVersion) {
+        throw new Error(`The ${language} SDK version is not a valid semver format.`);
+    }
+    return sdkVersion.inc('patch').version;
+}
 async function setLanguagesForUpdate() {
     const liblabConfig = await (0, read_liblab_config_1.readLiblabConfig)();
     const languagesToUpdate = [];
@@ -35005,6 +35016,8 @@ async function setLanguagesForUpdate() {
                 languageVersion: manifest.liblabVersion,
                 language
             }))) {
+            liblabConfig.languageOptions[language].sdkVersion =
+                bumpSdkVersionOrDefault(liblabConfig, language);
             languagesToUpdate.push(language);
         }
     }

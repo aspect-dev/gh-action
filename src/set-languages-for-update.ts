@@ -15,6 +15,25 @@ const MANIFEST_PATH = '.manifest.json'
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
 
+function bumpSdkVersionOrDefault(
+  liblabConfig: LibLabConfig,
+  language: Language
+): string {
+  const currentSdkVersion = liblabConfig.languageOptions[language]?.sdkVersion
+
+  if (!currentSdkVersion) {
+    return '1.0.0'
+  }
+
+  const sdkVersion = semver.parse(currentSdkVersion)
+
+  if (!sdkVersion) {
+    throw new Error(`The ${language} SDK version is not a valid semver format.`)
+  }
+
+  return sdkVersion.inc('patch').version
+}
+
 export async function setLanguagesForUpdate(): Promise<string[]> {
   const liblabConfig = await readLiblabConfig()
   const languagesToUpdate = []
@@ -29,6 +48,8 @@ export async function setLanguagesForUpdate(): Promise<string[]> {
         language
       }))
     ) {
+      liblabConfig.languageOptions[language].sdkVersion =
+        bumpSdkVersionOrDefault(liblabConfig, language)
       languagesToUpdate.push(language)
     }
   }
