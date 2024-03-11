@@ -34845,21 +34845,29 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.cmd = void 0;
 const process_1 = __importDefault(__nccwpck_require__(7282));
 const child_process_1 = __nccwpck_require__(2081);
-function cmd(...command) {
-    let p = (0, child_process_1.spawn)(command[0], command.slice(1), {
+async function cmd(...command) {
+    const spawnProcess = (0, child_process_1.spawn)(command[0], command.slice(1), {
         env: {
             ...process_1.default.env
         }
     });
-    return new Promise(resolve => {
-        p.stdout.on('data', x => {
+    return new Promise((resolve, reject) => {
+        spawnProcess.stdout.on('data', x => {
             process_1.default.stdout.write(x.toString());
         });
-        p.stderr.on('data', x => {
+        spawnProcess.stderr.on('data', x => {
             process_1.default.stderr.write(x.toString());
         });
-        p.on('exit', code => {
-            resolve(code);
+        spawnProcess.on('exit', code => {
+            if (code === 0) {
+                resolve(code);
+            }
+            else {
+                reject(new Error(`Command '${command.join(' ')}' exited with code ${code}`));
+            }
+        });
+        spawnProcess.on('error', err => {
+            reject(err);
         });
     });
 }
@@ -34913,23 +34921,25 @@ async function run() {
         core.exportVariable('github_token', githubToken);
         const languagesToUpdate = await (0, set_languages_for_update_1.setLanguagesForUpdate)();
         if (!languagesToUpdate) {
-            core.info('No languages need an update. Exiting the action.');
-            core.setOutput('status', `No languages need an update.`);
+            core.info('************ No languages need an update. Skipping the builds. ************');
+            core.setOutput('status', 'skipped');
             return;
         }
-        core.info(`Languages that need update: ${languagesToUpdate}`);
-        core.info('Building SDKs...');
+        core.info(`************ Languages that need update: ${languagesToUpdate} ************`);
+        core.info('************ Building SDKs... ************');
         await (0, cmd_1.cmd)('npx', '--yes', 'liblab', 'build', '--yes');
-        core.info('Finished building SDKs.');
-        core.info('Publishing PRs...');
+        core.info('************ Finished building SDKs. ************');
+        core.info('************ Publishing PRs... ************');
         await (0, cmd_1.cmd)('npx', '--yes', 'liblab', 'pr');
-        core.info('Finished publishing PRs.');
-        core.setOutput('status', `Finished building languages: `);
+        core.info('************ Finished publishing PRs. ************');
+        core.setOutput('status', `success`);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
-        if (error instanceof Error)
+        if (error instanceof Error) {
+            core.setOutput('status', 'failed');
             core.setFailed(error.message);
+        }
     }
 }
 exports.run = run;
@@ -34958,7 +34968,7 @@ async function readLiblabConfig() {
         return JSON.parse(rawData);
     }
     catch (error) {
-        // @ts-ignore
+        // @ts-expect-error if customers removed liblab.config.json
         throw new Error(`Error reading liblab.config.json: ${error.message}`);
     }
 }
@@ -35020,12 +35030,10 @@ async function fetchManifestForLanguage(language, config) {
 }
 async function shouldUpdateLanguage(args) {
     const { liblabVersion, language, languageVersion } = args;
-    // const [latestCodeGenVersion, latestSdkGenVersion] = await Promise.all([
-    //   getLatestVersion(LIBLAB_OWNER, SdkEngines.CodeGen),
-    //   getLatestVersion(LIBLAB_OWNER, SdkEngines.SdkGen)
-    // ]);
-    // TODO: @skos temporary change because I'm unable to use secrets for Liblabot GITHUB_TOKEN inside a composite Github Action
-    const [latestCodeGenVersion, latestSdkGenVersion] = ['1.1.39', '2.0.17'];
+    const [latestCodeGenVersion, latestSdkGenVersion] = [
+        sdk_language_engine_map_1.SdkEngineVersions.CodeGen,
+        sdk_language_engine_map_1.SdkEngineVersions.SdkGen
+    ];
     const codeGenHasNewVersion = semver_1.default.gt(latestCodeGenVersion, languageVersion);
     const sdkGenHasNewVersion = semver_1.default.gt(latestSdkGenVersion, languageVersion);
     if (liblabVersion === '1') {
@@ -35058,39 +35066,6 @@ async function fetchFileFromBranch({ owner, path, repo }) {
     }
     return Buffer.from(data.content, 'base64').toString('utf8');
 }
-async function getLatestVersion(owner, repository) {
-    try {
-        const release = await getLatestRepoRelease({
-            owner,
-            repo: repository
-        });
-        console.log(`Latest ${owner}/${repository} release is ${release.tagName}`);
-        return getVersionFromTagName(release.tagName);
-    }
-    catch (error) {
-        console.log(error);
-        throw new Error(`Unable to get latest release from repo ${owner}/${repository}`);
-    }
-}
-/**
- * Parses a semantic versioning tag name in format of v0.0.1.
- * @param tagName tag name (e.g. v0.0.1)
- */
-function getVersionFromTagName(tagName) {
-    const hasVersionPrefix = tagName && tagName.length > 1 && tagName.startsWith('v');
-    return hasVersionPrefix ? tagName.substring(1) : tagName;
-}
-async function getLatestRepoRelease(args) {
-    const { owner, repo } = args;
-    const { data: release, status } = await octokit.repos.getLatestRelease({
-        owner,
-        repo
-    });
-    if (status !== 200) {
-        throw new Error(`Could not get latest release for repository: ${owner}/${repo}`);
-    }
-    return { tagName: release.tag_name };
-}
 
 
 /***/ }),
@@ -35121,13 +35096,18 @@ var Language;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getSdkEngine = exports.sdkLanguageEngineMap = exports.SdkEngines = void 0;
+exports.getSdkEngine = exports.sdkLanguageEngineMap = exports.SdkEngineVersions = exports.SdkEngines = void 0;
 const language_1 = __nccwpck_require__(7930);
 var SdkEngines;
 (function (SdkEngines) {
     SdkEngines["CodeGen"] = "code-gen";
     SdkEngines["SdkGen"] = "sdk-gen";
 })(SdkEngines || (exports.SdkEngines = SdkEngines = {}));
+var SdkEngineVersions;
+(function (SdkEngineVersions) {
+    SdkEngineVersions["CodeGen"] = "1.1.40";
+    SdkEngineVersions["SdkGen"] = "2.0.18";
+})(SdkEngineVersions || (exports.SdkEngineVersions = SdkEngineVersions = {}));
 exports.sdkLanguageEngineMap = {
     [language_1.Language.java]: SdkEngines.CodeGen,
     [language_1.Language.python]: SdkEngines.CodeGen,
