@@ -6,6 +6,11 @@ export enum SdkEngines {
   SdkGen = 'sdk-gen'
 }
 
+export enum SdkEngineVersions {
+  CodeGen = '1.1.40',
+  SdkGen = '2.0.18'
+}
+
 export const sdkLanguageEngineMap = {
   [Language.java]: SdkEngines.CodeGen,
   [Language.python]: SdkEngines.CodeGen,

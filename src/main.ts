@@ -16,11 +16,15 @@ export async function run(): Promise<void> {
 
     const languagesToUpdate = await setLanguagesForUpdate()
     if (!languagesToUpdate) {
-      core.info('************ No languages need an update. Skipping the builds. ************')
+      core.info(
+        '************ No languages need an update. Skipping the builds. ************'
+      )
       core.setOutput('status', 'skipped')
       return
     }
-    core.info(`************ Languages that need update: ${languagesToUpdate} ************`)
+    core.info(
+      `************ Languages that need update: ${languagesToUpdate} ************`
+    )
 
     core.info('************ Building SDKs... ************')
     await cmd('npx', '--yes', 'liblab', 'build', '--yes')

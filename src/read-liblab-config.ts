@@ -12,7 +12,7 @@ export async function readLiblabConfig(): Promise<LibLabConfig> {
     const rawData = await fs.readFile(LIBLAB_CONFIG_PATH, 'utf8')
     return JSON.parse(rawData) as LibLabConfig
   } catch (error) {
-    // @ts-ignore
+    // @ts-expect-error if customers removed liblab.config.json
     throw new Error(`Error reading liblab.config.json: ${error.message}`)
   }
 }

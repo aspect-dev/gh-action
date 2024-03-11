@@ -1,0 +1,28 @@
+name: Test Action CI
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-action:
+    name: GitHub Actions Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Liblab SDK updates
+        id: liblab_sdk_updates
+        uses: ./
+        env:
+          LIBLAB_ENVIRONMENT: ${{ secrets.LIBLAB_ENVIRONMENT }}
+        with:
+          liblab_token: ${{ secrets.LIBLAB_TOKEN }}
+          github_token: ${{ secrets.LIBLAB_GITHUB_TOKEN }}
+
+      - name: Build status
+        run: echo "Status is ${{ steps.liblab_sdk_updates.outputs.status }}"

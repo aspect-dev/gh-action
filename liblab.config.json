@@ -3,14 +3,9 @@
   "apiVersion": "1.0.0",
   "apiName": "test-api",
   "specFilePath": "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/examples/v3.0/petstore.json",
-  "languages": [
-    "csharp",
-    "typescript"
-  ],
+  "languages": ["csharp", "typescript"],
   "createDocs": false,
-  "auth": [
-    "bearer"
-  ],
+  "auth": ["bearer"],
   "customizations": {
     "includeOptionalSnippetParameters": true,
     "authentication": {

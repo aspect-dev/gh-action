@@ -3,8 +3,11 @@ import { Manifest } from './types/manifest'
 import { LibLabConfig, LiblabVersion } from './types/liblab-config'
 import { Language } from './types/language'
 import semver from 'semver'
-import { GitRepoRelease } from './types/git-repo-release'
-import { getSdkEngine, SdkEngines } from './types/sdk-language-engine-map'
+import {
+  getSdkEngine,
+  SdkEngines,
+  SdkEngineVersions
+} from './types/sdk-language-engine-map'
 import { LIBLAB_CONFIG_PATH, readLiblabConfig } from './read-liblab-config'
 import fs from 'fs-extra'
 
@@ -64,12 +67,10 @@ async function shouldUpdateLanguage(args: {
 }): Promise<boolean> {
   const { liblabVersion, language, languageVersion } = args
 
-  // const [latestCodeGenVersion, latestSdkGenVersion] = await Promise.all([
-  //   getLatestVersion(LIBLAB_OWNER, SdkEngines.CodeGen),
-  //   getLatestVersion(LIBLAB_OWNER, SdkEngines.SdkGen)
-  // ]);
-  // TODO: @skos temporary change because I'm unable to use secrets for Liblabot GITHUB_TOKEN inside a composite Github Action
-  const [latestCodeGenVersion, latestSdkGenVersion] = ['1.1.39', '2.0.17']
+  const [latestCodeGenVersion, latestSdkGenVersion] = [
+    SdkEngineVersions.CodeGen,
+    SdkEngineVersions.SdkGen
+  ]
 
   const codeGenHasNewVersion = semver.gt(latestCodeGenVersion, languageVersion)
   const sdkGenHasNewVersion = semver.gt(latestSdkGenVersion, languageVersion)
@@ -123,57 +124,5 @@ async function fetchFileFromBranch({
     )
   }
 
-  return Buffer.from(data.content!, 'base64').toString('utf8')
-}
-
-async function getLatestVersion(
-  owner: string,
-  repository: string
-): Promise<string> {
-  try {
-    const release = await getLatestRepoRelease({
-      owner,
-      repo: repository
-    })
-
-    console.log(`Latest ${owner}/${repository} release is ${release.tagName}`)
-
-    return getVersionFromTagName(release.tagName)
-  } catch (error) {
-    console.log(error)
-    throw new Error(
-      `Unable to get latest release from repo ${owner}/${repository}`
-    )
-  }
-}
-
-/**
- * Parses a semantic versioning tag name in format of v0.0.1.
- * @param tagName tag name (e.g. v0.0.1)
- */
-function getVersionFromTagName(tagName: string): string {
-  const hasVersionPrefix =
-    tagName && tagName.length > 1 && tagName.startsWith('v')
-
-  return hasVersionPrefix ? tagName.substring(1) : tagName
-}
-
-async function getLatestRepoRelease(args: {
-  owner: string
-  repo: string
-}): Promise<GitRepoRelease> {
-  const { owner, repo } = args
-
-  const { data: release, status } = await octokit.repos.getLatestRelease({
-    owner,
-    repo
-  })
-
-  if (status !== 200) {
-    throw new Error(
-      `Could not get latest release for repository: ${owner}/${repo}`
-    )
-  }
-
-  return { tagName: release.tag_name }
+  return Buffer.from(data.content, 'base64').toString('utf8')
 }
