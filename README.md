@@ -8,11 +8,14 @@
 Generate SDKs using the latest liblab versions and publish PRs directly to your
 SDK repositories.
 
-This GitHub Action will regenerate your SDKs whenever there is a new release of liblab.
+This GitHub Action will regenerate your SDKs whenever there is a new release of
+liblab.
 
-This is a simple way of keeping your SDKs up to date with the latest liblab releases.
+This is a simple way of keeping your SDKs up to date with the latest liblab
+releases.
 
-For more information about GitHub integration with liblab, check our docs: https://developers.liblab.com/tutorials/integrate-with-github-actions
+For more information about GitHub integration with liblab, check our docs:
+https://developers.liblab.com/tutorials/integrate-with-github-actions
 
 ## Usage:
 
@@ -32,14 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        
+
       - name: Generate SDKs and publish PRs
         id: generate_sdks_and_publish_prs
-        uses: skosijer/gh-action@v1
+        uses: liblaber/liblab-sdk-updates@v1
         with:
           liblab_token: ${{ secrets.LIBLAB_TOKEN }}
           github_token: ${{ secrets.LIBLAB_GITHUB_TOKEN }}
-          
-      - name: Build status
-        run: echo "Status is ${{ steps.generate_sdks_and_publish_prs.outputs.status }}"
 ```
