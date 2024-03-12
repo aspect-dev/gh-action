@@ -23,6 +23,3 @@ jobs:
         with:
           liblab_token: ${{ secrets.LIBLAB_TOKEN }}
           github_token: ${{ secrets.LIBLAB_GITHUB_TOKEN }}
-
-      - name: Build status
-        run: echo "Status is ${{ steps.liblab_sdk_updates.outputs.status }}"
