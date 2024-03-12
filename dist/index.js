@@ -34997,13 +34997,16 @@ const octokit = new rest_1.Octokit({ auth: process.env.GITHUB_TOKEN });
 function bumpSdkVersionOrDefault(liblabConfig, language) {
     const currentSdkVersion = liblabConfig.languageOptions[language]?.sdkVersion;
     if (!currentSdkVersion) {
+        console.log(`No SDK version set for ${language}, setting default version 1.0.0`);
         return '1.0.0';
     }
     const sdkVersion = semver_1.default.parse(currentSdkVersion);
     if (!sdkVersion) {
         throw new Error(`The ${language} SDK version is not a valid semver format.`);
     }
-    return sdkVersion.inc('patch').version;
+    const bumpedSdkVersion = sdkVersion.inc('patch').version;
+    console.log(`Bumping SDK version for ${language} from ${currentSdkVersion} to ${bumpedSdkVersion}`);
+    return bumpedSdkVersion;
 }
 async function setLanguagesForUpdate() {
     const liblabConfig = await (0, read_liblab_config_1.readLiblabConfig)();
@@ -35022,7 +35025,7 @@ async function setLanguagesForUpdate() {
         }
     }
     if (languagesToUpdate.length !== 0) {
-        liblabConfig.languages = languagesToUpdate;
+        liblabConfig.languages = [...languagesToUpdate];
         await fs_extra_1.default.writeJson(read_liblab_config_1.LIBLAB_CONFIG_PATH, liblabConfig, { spaces: 2 });
     }
     return languagesToUpdate;

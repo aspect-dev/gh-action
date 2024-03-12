@@ -22,6 +22,9 @@ function bumpSdkVersionOrDefault(
   const currentSdkVersion = liblabConfig.languageOptions[language]?.sdkVersion
 
   if (!currentSdkVersion) {
+    console.log(
+      `No SDK version set for ${language}, setting default version 1.0.0`
+    )
     return '1.0.0'
   }
 
@@ -31,7 +34,12 @@ function bumpSdkVersionOrDefault(
     throw new Error(`The ${language} SDK version is not a valid semver format.`)
   }
 
-  return sdkVersion.inc('patch').version
+  const bumpedSdkVersion = sdkVersion.inc('patch').version
+  console.log(
+    `Bumping SDK version for ${language} from ${currentSdkVersion} to ${bumpedSdkVersion}`
+  )
+
+  return bumpedSdkVersion
 }
 
 export async function setLanguagesForUpdate(): Promise<string[]> {
@@ -55,7 +63,7 @@ export async function setLanguagesForUpdate(): Promise<string[]> {
   }
 
   if (languagesToUpdate.length !== 0) {
-    liblabConfig.languages = languagesToUpdate
+    liblabConfig.languages = [...languagesToUpdate]
     await fs.writeJson(LIBLAB_CONFIG_PATH, liblabConfig, { spaces: 2 })
   }
 
