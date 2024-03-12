@@ -35014,11 +35014,8 @@ async function setLanguagesForUpdate() {
     for (const language of liblabConfig.languages) {
         const manifest = await fetchManifestForLanguage(language, liblabConfig);
         if (!manifest ||
-            (await shouldUpdateLanguage({
-                liblabVersion: liblabConfig.liblabVersion,
-                languageVersion: manifest.liblabVersion,
-                language
-            }))) {
+            (await shouldUpdateLanguage(language, manifest.liblabVersion, liblabConfig.languageOptions[language].liblabVersion ||
+                liblabConfig.liblabVersion))) {
             liblabConfig.languageOptions[language].sdkVersion =
                 bumpSdkVersionOrDefault(liblabConfig, language);
             languagesToUpdate.push(language);
@@ -35044,8 +35041,7 @@ async function fetchManifestForLanguage(language, config) {
         console.log(`Unable to fetch .manifest.json file from ${config.publishing.githubOrg}/${config.languageOptions[language].githubRepoName}`);
     }
 }
-async function shouldUpdateLanguage(args) {
-    const { liblabVersion, language, languageVersion } = args;
+async function shouldUpdateLanguage(language, languageVersion, liblabVersion) {
     const [latestCodeGenVersion, latestSdkGenVersion] = [
         sdk_language_engine_map_1.SdkEngineVersions.CodeGen,
         sdk_language_engine_map_1.SdkEngineVersions.SdkGen
