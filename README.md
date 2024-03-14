@@ -38,7 +38,7 @@ jobs:
 
       - name: Generate SDKs and publish PRs
         id: generate_sdks_and_publish_prs
-        uses: liblaber/liblab-sdk-updates@v1
+        uses: skosijer/gh-action@v1
         with:
           liblab_token: ${{ secrets.LIBLAB_TOKEN }}
           github_token: ${{ secrets.LIBLAB_GITHUB_TOKEN }}

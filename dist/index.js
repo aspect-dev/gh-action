@@ -34964,8 +34964,7 @@ async function readLiblabConfig() {
         throw new Error('liblab.config.json not found in the root directory.');
     }
     try {
-        const rawData = await fs_extra_1.default.readFile(exports.LIBLAB_CONFIG_PATH, 'utf8');
-        return JSON.parse(rawData);
+        return (await fs_extra_1.default.readJson(exports.LIBLAB_CONFIG_PATH));
     }
     catch (error) {
         // @ts-expect-error if customers removed liblab.config.json
